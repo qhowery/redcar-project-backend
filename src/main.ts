@@ -15,7 +15,8 @@ async function bootstrap() {
     origin: [
       process.env.FRONTEND_URL,
       'https://redcar-project.vercel.app',
-      'http://localhost:3000'
+      'http://localhost:3000',
+      'https://redcar-project-pibs3dwee-qhowerys-projects.vercel.app'
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
