@@ -45,10 +45,6 @@ export class AuthService {
 
   // Existing register method
   async register(registerDto: RegisterDto) {
-    if (!registerDto.password || registerDto.password.length < 8) {
-      throw new BadRequestException('Password must be at least 8 characters');
-    }
-
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     if (!hashedPassword?.startsWith('$2b$')) {
       throw new InternalServerErrorException('Password hashing failed');
