@@ -68,7 +68,7 @@ export class AppService {
 
         // Build the payload with streaming enabled.
         const payload = JSON.stringify({
-          model: 'gpt-3.5-turbo',
+          model: 'chatgpt-4o-latest',
           messages: [{ role: 'user', content: prompt }],
           max_tokens: 100,
           temperature: 0.7,
