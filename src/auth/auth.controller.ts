@@ -12,6 +12,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
+import { UserService } from '../user/user.service'; 
 import { RegisterDto } from './register.dto';
 import { LoginDto } from './login.dto';
 import { JwtPayload } from '../../types/jwt-payload';
@@ -20,7 +21,10 @@ import * as bcrypt from 'bcrypt';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService
+  ) {}
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
@@ -58,17 +62,21 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   async getProfile(@Req() req: Request) {
-    const payload = req.user as JwtPayload; // Type assertion here
-    const user = await this.authService.getUserById(payload.sub);
+    const payload = req.user as JwtPayload;
+    const user = await this.userService.findById(payload.sub);
     
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
     
-    return { id: user.id, username: user.username };
+    return { 
+      id: user.id, 
+      username: user.username,
+      history: user.history || [] // Return history
+    };
   }
 
-  // auth.controller.ts
+
   @Post('test-hash')
   async testHash(@Body() { password }: { password: string }) {
     const hash = await bcrypt.hash(password, 10);

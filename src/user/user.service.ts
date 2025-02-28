@@ -21,8 +21,20 @@ export class UserService {
     });
   }
 
+  async addHistory(userId: number, historyItem: { question: string; answer: string }): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) throw new Error('User not found');
+    
+    user.history = user.history || [];
+    user.history.push(historyItem);
+    return this.userRepository.save(user);
+  }
+  
   async findById(id: number) {
-    return this.userRepository.findOne({ where: { id } }); // TypeORM example
+    return this.userRepository.findOne({ 
+      where: { id },
+      select: ['id', 'username', 'password', 'history']
+    });
   }
 
   // ✅ Accepts username and password as separate arguments
@@ -33,4 +45,5 @@ export class UserService {
     });
     return this.userRepository.save(newUser);
   }
+
 }

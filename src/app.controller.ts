@@ -2,10 +2,15 @@ import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { AppService } from './app.service';
+import { UserService } from './user/user.service';
+import { JwtPayload } from '../types/jwt-payload';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly userService: UserService
+  ) {}
 
   @Get()
   getHome(): string {
@@ -21,11 +26,21 @@ export class AppController {
   }
 
   // Protected /ask endpoint.
-  @UseGuards(AuthGuard('jwt'))
   @Post('ask')
-  async askQuestion(@Body() payload: { question: string }, @Req() req: Request): Promise<string> {
-    console.log('Authorization Header:', req.headers.authorization);
-    console.log('Authenticated User:', req.user);
-    return this.appService.processAndStreamData(payload.question);
+  @UseGuards(AuthGuard('jwt'))
+  async askQuestion(
+    @Body() body: { question: string },
+    @Req() req: Request
+  ) {
+    const user = req.user as JwtPayload;
+    if (!user) throw new Error('Unauthorized');
+    const answer = await this.appService.processAndStreamData(body.question);
+
+    // added history using UserService
+    await this.userService.addHistory(user.sub, {
+      question: body.question,
+      answer
+    });
+    return { answer };
   }
 }
